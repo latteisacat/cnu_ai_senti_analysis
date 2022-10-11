@@ -54,4 +54,4 @@ content = ''
 for line in contents:  # 순서대로 <p>를 가져와서 line에 넣고 다음 코드 실행
     content += line.get_text()
 
-print(f'본문:{content}')
+print(f'본문내용:{content}')

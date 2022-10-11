@@ -13,4 +13,4 @@ doc = BeautifulSoup(result.text, 'html.parser')
 
 title = doc.select('h2.media_end_head_headline')[0].get_text()
 
-print(title)
+print(f'뉴스제목{title}')
