@@ -12,5 +12,8 @@ result = requests.get(url, headers=headers)
 doc = BeautifulSoup(result.text, 'html.parser')
 
 title = doc.select('h2.media_end_head_headline')[0].get_text()
+content = doc.select('div#dic_area')[0].get_text().strip()
 
-print(f'뉴스제목{title}')
+print('뉴스제목 : {}'.format(title))  # format
+print(f'\n본문내용 : {content}')  # fstring
+
