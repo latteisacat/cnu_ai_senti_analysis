@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from collector.CollectorService import get_daum_news
+from collector.practice.CollectorService import get_daum_news
 
 main_url = 'https://news.daum.net/breakingnews/digital'
 # SSL Error 가 뜰 경우 -> requests.get(url, verify=False)
