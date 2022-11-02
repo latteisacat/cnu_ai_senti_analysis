@@ -24,10 +24,32 @@ def movie_title_crawler(movie_code):
 # 리뷰 수집(리뷰, 평점, 작성자, 작성일자) + 제목
 def movie_review_crawler(movie_code):
     title = movie_title_crawler(movie_code)  # 제목 수집
-    # 리뷰 수집 코드 작성
-    num = 1
-    url = 'https://movie.naver.com/movie/bi/mi/pointWriteFormList.naver?code=190694\
-    &type=after&isActualPointWriteExecute=false&isMileageSubscriptionAlready=false&isMileageSubscriptionReject=false&page={num}'
     print(f'제목: {title}')
+    # 리뷰 수집 코드 작성
+    review = []
+    temp = []
+    num = 243
+    while True:
+        url = f"https://movie.naver.com/movie/bi/mi/pointWriteFormList.naver?code={movie_code}&type=after&isActualPointWriteExecute=false&isMileageSubscriptionAlready=false&isMileageSubscriptionReject=false&page={num}"
+        # 네이버 영화는 마지막 페이지를 초과하는 페이지가 들어오면 마지막 페이지를 유지하게 된다.
+        # 따라서 이전의 url에서 가져온 내용과 현재 temp에 저장된 내용의 동일성을 검사해야 같은 페이지임을 유추할 수 있다.
+        # 함수 호출을 두 번씩 이나 하므로 좀 비효율적으로 보인다 다른 방법은 없을까?
+        if temp == review_collector(url):
+            break
+        else:
+            temp = review_collector(url)
+        review = review + temp
+        num = num + 1
+    print(review)
 
+
+def review_collector(url):
+    result = requests.get(url)
+    review = []
+    doc = BeautifulSoup(result.text, 'html.parser')
+    for i in range(0, 10):
+        if len(doc.select(f'#_filtered_ment_{i}')) == 0:
+            break
+        review.append(doc.select(f'#_filtered_ment_{i}')[0].get_text().strip())
+    return review
 
