@@ -1,4 +1,6 @@
 import requests
+import re
+import math
 from bs4 import BeautifulSoup
 
 
@@ -13,6 +15,7 @@ from bs4 import BeautifulSoup
 # 1. 생성 2. 호출
 # - 함수는 생성하면 아무동작도 하지 않음
 # - 반드시 생성 후 호출을 통해서 사용
+
 def movie_title_crawler(movie_code):
     url = f'https://movie.naver.com/movie/bi/mi/point.naver?code={movie_code}'
     result = requests.get(url)
@@ -24,32 +27,32 @@ def movie_title_crawler(movie_code):
 # 리뷰 수집(리뷰, 평점, 작성자, 작성일자) + 제목
 def movie_review_crawler(movie_code):
     title = movie_title_crawler(movie_code)  # 제목 수집
-    print(f'제목: {title}')
+    print(f'>> Start collecting movies for {title}')
     # 리뷰 수집 코드 작성
-    review = []
-    temp = []
-    num = 243
-    while True:
-        url = f"https://movie.naver.com/movie/bi/mi/pointWriteFormList.naver?code={movie_code}&type=after&isActualPointWriteExecute=false&isMileageSubscriptionAlready=false&isMileageSubscriptionReject=false&page={num}"
-        # 네이버 영화는 마지막 페이지를 초과하는 페이지가 들어오면 마지막 페이지를 유지하게 된다.
-        # 따라서 이전의 url에서 가져온 내용과 현재 temp에 저장된 내용의 동일성을 검사해야 같은 페이지임을 유추할 수 있다.
-        # 함수 호출을 두 번씩 이나 하므로 좀 비효율적으로 보인다 다른 방법은 없을까?
-        if temp == review_collector(url):
-            break
-        else:
-            temp = review_collector(url)
-        review = review + temp
-        num = num + 1
-    print(review)
-
-
-def review_collector(url):
+    url = f"https://movie.naver.com/movie/bi/mi/pointWriteFormList.naver?code={movie_code}&type=after&isActualPointWriteExecute=false&isMileageSubscriptionAlready=false&isMileageSubscriptionReject=false&page=1"
     result = requests.get(url)
-    review = []
     doc = BeautifulSoup(result.text, 'html.parser')
-    for i in range(0, 10):
-        if len(doc.select(f'#_filtered_ment_{i}')) == 0:
-            break
-        review.append(doc.select(f'#_filtered_ment_{i}')[0].get_text().strip())
-    return review
+    all_count = doc.select('strong.total > em')[0].get_text() #리뷰 전체 수 수집
+    # "2,480" : str type(문자열), 문자 ','가 포함되어 있어 int 형으로 변환이 불가
+    numbers = re.sub(r"[^0-9]", "", all_count)  # 0부터 9 제외 전부 공백으로 변환 re는 정규식 함수 파이썬 정규식 검색해보자.
+    pages = math.ceil(int(numbers)/10)
+    print(f'The total number of pages to collect is {pages}')
+
+    # 해당 페이지 리뷰 수집!
+    count = 0 # 전체 리뷰 수를 count
+    for page in range(1, pages + 1):
+        url = f"https://movie.naver.com/movie/bi/mi/pointWriteFormList.naver?code={movie_code}&type=after&isActualPointWriteExecute=false&isMileageSubscriptionAlready=false&isMileageSubscriptionReject=false&page={page}"
+        result = requests.get(url)
+        doc = BeautifulSoup(result.text, 'html.parser');
+        review_list = doc.select('div.score_result > ul >li')  # 1page의 리뷰 10건
+        print(review_list)
+
+        for i, one in enumerate(review_list): # review 1건씩 수집
+            # 리뷰, 평점, 작성자, 작성일자
+            score = one.select('div.star_score > em')[0].get_text()
+            # review = one.select(f'#_filtered_ment_{i}')[0].get_text().strip()
+            review = one.select('div.score_reple > p > span')[-1].get_text().strip()  # -1은 마지막 인덱스
+            print(f'# Score : {score}')
+            print(f'# Review : {review}')
+        break
 
