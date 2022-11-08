@@ -47,12 +47,38 @@ def movie_review_crawler(movie_code):
         review_list = doc.select('div.score_result > ul >li')  # 1page의 리뷰 10건
         print(review_list)
 
-        for i, one in enumerate(review_list): # review 1건씩 수집
+        for i, one in enumerate(review_list): # review 1건씩 수집 (MongoDB 에 저장할 예정)
             # 리뷰, 평점, 작성자, 작성일자
             score = one.select('div.star_score > em')[0].get_text()
-            # review = one.select(f'#_filtered_ment_{i}')[0].get_text().strip()
+            # review = one.select(f'#_filtered_ment_{i}')[0].get_text().strip() 이렇게 id로 찾는 방식은
+            # id가 자주변경되는 데이터 중 하나라 좋은 방식이 아니라고 하심.
             review = one.select('div.score_reple > p > span')[-1].get_text().strip()  # -1은 마지막 인덱스
-            print(f'# Score : {score}')
-            print(f'# Review : {review}')
-        break
+
+            # 날짜 시간 -> 날짜만 추출
+            # 예: 2022.10.19 15:28 -> 2022.10.19
+            # - 날짜는 항상 16글자로 구성
+            # [3:] 3~끝까지
+            original_date = one.select('div.score_reple > dl > dt > em')[-1].get_text()
+            date = original_date[0:11]
+            # 문자열 추출
+            # [시작:끝+1], 끝은 포함 X
+            # [:15] 0~14
+
+            original_writer = one.select('div.score_reple > dl > dt > em')[0].get_text().strip()
+            # writer = re.sub("(.)", "", original_writer)
+            idx_end = original_writer.find('(')
+            writer = original_writer[:idx_end]
+            count += 1
+            print(f"## 리뷰 -> {count} ####################################################################")
+            print(f'# Review: {review}')
+            print(f'# Score: {score}')
+            print(f'# Writer: {writer}')
+            print(f'# Date: {date}')
+
+# 이후 할 일 수집(리뷰)-> 저장(MongoDB) -> 전처리, 탐색 -> 딥러닝 모델 학습&평가(긍정/부정 분석기)->시각화 또는 실제 데이터 서비스
+# MongoDB 데이터베이스 사용 방식
+# 1. Local(컴퓨터) 설치 - 노트북
+# 2. 웹 클라우드 사용(ip, 내부 ip 사용X) - 컴퓨터
+# https://github.com/ChoLong02/2022_02_cnu_ai 교수님 코드
+# 저장 배우면서 이론 수업 진행되는데 여기서 기말 나옴
 

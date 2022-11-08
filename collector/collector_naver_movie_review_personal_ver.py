@@ -14,7 +14,8 @@ from bs4 import BeautifulSoup
 # 1. 생성 2. 호출
 # - 함수는 생성하면 아무동작도 하지 않음
 # - 반드시 생성 후 호출을 통해서 사용
-
+# class
+# log 공부
 def movie_title_crawler(movie_code):
     url = f'https://movie.naver.com/movie/bi/mi/point.naver?code={movie_code}'
     result = requests.get(url)
