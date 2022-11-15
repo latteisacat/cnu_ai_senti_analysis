@@ -2,6 +2,7 @@ import requests
 import re
 import math
 from bs4 import BeautifulSoup
+from db.database import create_review
 
 
 #################
@@ -74,6 +75,24 @@ def movie_review_crawler(movie_code):
             print(f'# Score: {score}')
             print(f'# Writer: {writer}')
             print(f'# Date: {date}')
+            # Review data 생성
+            # -> 규격(포멧) -> JSON
+            # JSON -> 데이터를 주고받을 때 많이 사용하는 타입
+            # MongoDB -> BSON(Binary JSON) = JSON
+            # python의 Dictionary = JSON
+            #
+            # Python의 dictionary 타입 = JSON = BSON
+            # {Key:value, Key:value, Key:value}
+            # dict type은 데이터를 꺼낼 때 key 값으로 꺼냄
+            # List type 은 index 값으로 꺼냄
+            data ={
+                'title': title,
+                'score': score,
+                'review': review,
+                'writer': writer,
+                'date': date
+            }
+            create_review(data)
 
 # 이후 할 일 수집(리뷰)-> 저장(MongoDB) -> 전처리, 탐색 -> 딥러닝 모델 학습&평가(긍정/부정 분석기)->시각화 또는 실제 데이터 서비스
 # MongoDB 데이터베이스 사용 방식
@@ -82,3 +101,4 @@ def movie_review_crawler(movie_code):
 # https://github.com/ChoLong02/2022_02_cnu_ai 교수님 코드
 # 저장 배우면서 이론 수업 진행되는데 여기서 기말 나옴
 
+# Python코드  <- pymongo -> mongoDB
